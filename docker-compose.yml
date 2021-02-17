@@ -1,0 +1,53 @@
+---
+version: "2.1"
+services:
+  traefik:
+    image: "traefik:v2.4"
+    container_name: "traefik"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - "/mnt/thickDrive/traefik:/var/run/docker.sock:ro"
+
+  # syncthing:
+  #   image: ghcr.io/linuxserver/syncthing
+  #   container_name: syncthing
+  #   hostname: syncthing #optional
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #     - TZ=America/Chicago
+  #   volumes:
+  #     - /path/to/appdata/config:/config
+  #     - /path/to/data1:/data1
+  #     - /path/to/data2:/data2
+  #   ports:
+  #     - 8384:8384
+  #     - 22000:22000
+  #     - 21027:21027/udp
+  #   restart: unless-stopped
+
+  heimdall:
+    image: ghcr.io/linuxserver/heimdall
+    container_name: heimdall
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    volumes:
+      - /mnt/thickDrive/heimdallConfig:/config
+    ports:
+      - 80:80
+      - 443:443
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.rule=Host(`server.local`)"
+      - "traefik.http.routers.whoami.entrypoints=web"
